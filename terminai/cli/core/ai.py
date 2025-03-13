@@ -73,21 +73,22 @@ class OllamaProvider(AIProvider):
         full_prompt = f"{system_prompt}\n\n{context_prompt}\nUser Query: {prompt}\n\nResponse:"
         return full_prompt
 
-    # Factory function for AI providers
-    def get_ai_provider() -> AIProvider:
-        """Factory function to get the configured AI provider"""
-        # This could be extended to support difference providers based on config
-        provider_type = os.environ.get("TERMINAI_PROVIDER", "ollama") # Defaulting Ollama
-        
-        if provider_type.lower() == "ollama":
-            base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
-            model = os.environ.get("OLLAMA_MODEL", "llama3")
-            return OllamaProvider(base_url=base_url, model=model)
-        else:
-            logger.error(f"Unsupported AI provider: {provider_type}")
-            raise ValueError(f"Unsupported AI provider: {provider_type}")
+# Factory function for AI providers
+def get_ai_provider() -> AIProvider:
+    """Factory function to get the configured AI provider"""
+    # This could be extended to support difference providers based on config
+    provider_type = os.environ.get("TERMINAI_PROVIDER", "ollama") # Defaulting Ollama
     
-    def generate_ai_response(prompt: str, context: Dict[str, Any] = None) -> str:
-        """Generate an AI response for the given prompt and context"""
-        provider = get_ai_provider()
-        return provider.generate_response(prompt, context)
+    if provider_type.lower() == "ollama":
+        base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
+        model = os.environ.get("OLLAMA_MODEL", "llama3")
+        return OllamaProvider(base_url=base_url, model=model)
+    else:
+        logger.error(f"Unsupported AI provider: {provider_type}")
+        raise ValueError(f"Unsupported AI provider: {provider_type}")
+
+# Convenience function for generating responses
+def generate_ai_response(prompt: str, context: Dict[str, Any] = None) -> str:
+    """Generate an AI response for the given prompt and context"""
+    provider = get_ai_provider()
+    return provider.generate_response(prompt, context)
