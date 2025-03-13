@@ -1,7 +1,7 @@
 import click
 from rich.console import Console
 
-console = Console() # Initializing the console for rich text
+console = Console()         # Initializing the console for rich text
 
 # Define the main command group
 @click.group()
@@ -10,13 +10,15 @@ def cli():
     """TerminAI: Your AI-powered terminal assistant."""
     pass
 
+# Defining the ask command 
 @cli.command()
 @click.argument("query")
 def ask(query):
     """Ask for a specific terminal command or workflow help."""
-    console.print(f"[bold green]You asked:[/bold green] {query}")
-    console.print(f"[yellow]This command will eventually use AI to answer your query.[/yellow]")
+    from .commands.ask import handle_ask_command        # Lazy importing for faster startup and dependency separation
+    handle_ask_command(query)
 
+# Defining the version command 
 @cli.command()
 def version():
     """Display the version of TerminAI."""

@@ -36,13 +36,29 @@ class OllamaProvider(AIProvider):
             # Construct the full prompt with context   
             full_prompt = self._build_prompt(prompt, context)
             
-            response = requests.post(f"{self.base_url}/api/generate", json={"model": self.model, "prompt": full_prompt})
+            # Call Ollama API
+            response = requests.post(f"{self.base_url}/api/generate", json={"model": self.model, "prompt": full_prompt, "stream": False})
             
             if response.status_code != 200:
                 logger.error(f"Ollama API error: {response.status_code} - {response.text}")
                 return f"Error: Failed to get response from AI model (HTTP {response.status_code})"
 
-            return response.json().get("response", "No response recieved") # Returns default message if "response" doesn't exist
+            # Trying to parse the response safely
+            try:
+                # Extract just the response text from the JSON
+                return response.json().get("response", "No response received")
+            except ValueError as json_err:
+                # If JSON parsing fails, try to extract the text directly
+                logger.warning(f"JSON parsing error: {json_err}. Trying alternative parsing.")
+                # Try an alternative approach for the Ollama API in case it is using a newer Ollama API format
+                try:
+                    if "message" in response.json():
+                        return response.json().get("message", {}).get("content", "No response content")
+                    # Simple fallback - just return the text
+                    return response.text.strip()
+                except:
+                    # Last resort - return raw text if all parsing attempts fail
+                    return response.text.strip()
         except Exception as e:
             logger.error(f"Error generating AI response: {str(e)}")
             return f"Error: {str(e)}"
