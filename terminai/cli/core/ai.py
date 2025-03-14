@@ -119,12 +119,25 @@ class APIProvider(AIProvider):
         
         logger.info(f"Initialized API provider with URL: {self.api_url}")
     
-    def generate_response(self, prompt: str, context: Dict[str, Any] = None) -> str:
-        """Generate a response using our backend API"""
+    def generate_response(self, prompt: str, context: Dict[str, Any] = None, command_type: str = "ask") -> str:
+        """
+        Generate a response using our backend API
+        
+        Args:
+            prompt: The user's query
+            context: Context information about the terminal environment
+            command_type: Type of command ("ask" or "debug")
+            
+        Returns:
+            str: The generated response
+        """
         
         try: 
             if not context:
                 context = {}
+            
+            # Select the appropriate endpoint based on command type
+            endpoint = f"/{command_type}"
             
             # Preparing request data
             data = {
@@ -140,7 +153,7 @@ class APIProvider(AIProvider):
             
             # Calling our backend API
             response = requests.post(
-                f"{self.api_url}/generate-command",
+                f"{self.api_url}/{endpoint}",
                 json=data,
                 headers=header
             )
@@ -189,7 +202,13 @@ def get_ai_provider() -> AIProvider:
         raise ValueError(f"Unsupported AI provider: {provider_type}")
 
 # Convenience function for generating responses
-def generate_ai_response(prompt: str, context: Dict[str, Any] = None) -> str:
+def generate_ai_response(prompt: str, context: Dict[str, Any] = None, command_type: str = "ask") -> str:
     """Generate an AI response for the given prompt and context"""
     provider = get_ai_provider()
-    return provider.generate_response(prompt, context)
+    
+    # If using APIProvider, pass the command_type
+    if isinstance(provider, APIProvider):
+        return provider.generate_response(prompt, context, command_type)
+    else:
+        # For other providers like Ollama, just use the standard method
+        return provider.generate_response(prompt, context)

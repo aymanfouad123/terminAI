@@ -24,13 +24,13 @@ def handle_ask_command(query: str) -> None:
         
         # Generate AI response
         console.print("[yellow]Thinking...[/yellow]")
-        response = generate_ai_response(query, context)
+        response = generate_ai_response(query, context, command_type="ask")
         
         # Display the response 
         console.print("\n[bold cyan]Suggested command:[/bold cyan]")
         console.print(f"[green]{response}[/green]")
         
-        # Auto run command prompt
+        # Ask user if they want to run the command
         if Confirm.ask("Run this command?"):
             console.print("[yellow]Executing command...[/yellow]")
             

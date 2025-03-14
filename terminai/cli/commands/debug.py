@@ -40,7 +40,7 @@ def handle_debug_command(error_message: str) -> None:
         
         # Generating response 
         console.print("[yello]Analysing...[/yellow]")
-        response = generate_ai_response(debug_prompt, context)
+        response = generate_ai_response(debug_prompt, context, command_type="debug")
         
         # Displaying the formatted response 
         console.print("\n[bold cyan]Error Analysis:[/bold cyan]")
