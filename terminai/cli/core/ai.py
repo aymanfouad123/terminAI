@@ -16,6 +16,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../"))
+env_path = os.path.join(project_root, ".env")
+
+
 class AIProvider:
     """Base class for AI providers"""
     
@@ -103,8 +107,11 @@ class APIProvider(AIProvider):
         """
         
         # Try to get API info from env if not provided 
-        self.api_url = api_url or os.environ.get("TERMINAL_API_URL", "http://localhost:8000")
-        self.api_key = api_key or os.environ.get("TERMINAI_API_KEY", "your_custom_api_key_here")
+        self.api_url = api_url or os.environ.get("TERMINAI_API_URL", "http://localhost:8000")
+        self.api_key = api_key or os.environ.get("TERMINAI_API_KEY")
+        if not self.api_key:
+            logger.error("TERMINAI_API_KEY environment variable not set")
+            raise ValueError("API key not provided and TERMINAI_API_KEY environment variable not set")
         
         # URL formatting
         if self.api_url.endswith('/'):
@@ -161,19 +168,32 @@ def get_ai_provider() -> AIProvider:
     """Factory function to get the configured AI provider"""
     
     # Load environment variables from .env file (if it exists)
-    if os.path.exists(".env"):
-        dotenv.load_dotenv()
+    if os.path.exists(env_path):
+        print(f"Found .env at {env_path}")
+        with open(env_path, 'r') as f:
+            content = f.read()
+            print(f"Content of .env file:\n{content}")
+    
+        before = os.environ.get("TERMINAI_PROVIDER", "not_set_before")
+        dotenv.load_dotenv(env_path, override=True)
+        after = os.environ.get("TERMINAI_PROVIDER", "not_set_after")
+        print(f"TERMINAI_PROVIDER before loading: {before}")
+        print(f"TERMINAI_PROVIDER after loading: {after}")
+    else:
+        print(f"Warning: .env file not found at {env_path}")
         
     # Get provider type from environment variable
     provider_type = os.environ.get("TERMINAI_PROVIDER", "api")
+    print(f"TERMINAI_PROVIDER: {provider_type}")
+    print(f"TERMINAI_API_URL: {os.environ.get('TERMINAI_API_URL', 'not set')}")
     
     if provider_type.lower() == "ollama":
         base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
         model = os.environ.get("OLLAMA_MODEL", "llama3")
         return OllamaProvider(base_url=base_url, model=model)
     elif provider_type.lower() == "api":
-        api_url = os.environ.get("TERMINAL_API_URL", "http://localhost:8000")
-        api_key = os.environ.get("TERMINAI_API_KEY", "your_custom_api_key_here")
+        api_url = os.environ.get("TERMINAI_API_URL", "http://localhost:8000")
+        api_key = os.environ.get("TERMINAI_API_KEY")
         return APIProvider(api_url=api_url, api_key=api_key)
     else:
         logger.error(f"Unsupported AI provider: {provider_type}")
