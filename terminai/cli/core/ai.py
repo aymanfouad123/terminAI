@@ -89,6 +89,72 @@ class OllamaProvider(AIProvider):
         full_prompt = f"{system_prompt}\n\n{context_prompt}\nUser Query: {prompt}\n\nResponse:"
         return full_prompt
 
+class APIProvider(AIProvider):
+    """Integration with our secure backend API"""
+    
+    def __init__(self, api_url: str = None, api_key: str = None):
+        """
+        Initialize the API provider.
+        
+        Args:
+            api_url: URL of the backend API. If None, will look for TERMINAI_API_URL env var.
+            api_key: API key for authentication. If None, will look for TERMINAI_API_KEY env var.
+        """
+        
+        # Try to get API info from env if not provided 
+        self.api_url = api_url or os.environ.get("TERMINAL_API_URL", "http://localhost:8000")
+        self.api_key = api_key or os.environ.get("TERMINAI_API_KEY", "your_custom_api_key_here")
+        
+        # URL formatting
+        if self.api_url.endswith('/'):
+            self.api_url = self.api_url[:-1]
+        
+        logger.info(f"Initialized API provider with URL: {self.api_url}")
+    
+    def generate_response(self, prompt: str, context: Dict[str, Any] = None) -> str:
+        """Generate a response using our backend API"""
+        
+        try: 
+            if not context:
+                context = {}
+            
+            # Preparing request data
+            data = {
+                "query": prompt,
+                "context": context
+            }
+            
+            # Setting headers with API key
+            header = {
+                "Content-Type": "application/json",
+                "X-API-Key": self.api_key
+            }
+            
+            # Calling our backend API
+            response = requests.post(
+                f"{self.api_url}/generate-command",
+                json=data,
+                headers=header
+            )
+            
+            # Checking response
+            if response.status_code != 200:
+                logger.error(f"API error: {response.status_code} - {response.text}")
+                return f"Error: Failed to get response from API (HTTP {response.status_code})"
+            
+            # Extract the command from the response 
+            try: 
+                result = response.json()
+                return result.get("command", "No command recieved")
+            except ValueError as json_err:
+                logger.error(f"JSON parsing error: {json_err}")
+                return f"Error parsing API response: {str(json_err)}"
+        
+        except Exception as e:
+            logger.error(f"Error generating AI response: {str(e)}")
+            return f"Error: {str(e)}"
+        
+
 # Factory function for AI providers
 def get_ai_provider() -> AIProvider:
     """Factory function to get the configured AI provider"""
