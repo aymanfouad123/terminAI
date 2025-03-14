@@ -39,7 +39,7 @@ def handle_debug_command(error_message: str) -> None:
         """
         
         # Generating response 
-        console.print("[yello]Analysing...[/yellow]")
+        console.print("[yellow]Analysing...[/yellow]")
         response = generate_ai_response(debug_prompt, context, command_type="debug")
         
         # Displaying the formatted response 
