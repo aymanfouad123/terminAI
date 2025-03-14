@@ -17,6 +17,14 @@ def ask(query):
     """Ask for a specific terminal command or workflow help."""
     from .commands.ask import handle_ask_command        # Lazy importing for faster startup and dependency separation
     handle_ask_command(query)
+    
+# Defining debug command 
+@cli.command()
+@click.argument("error_message")
+def debug(error_message):
+    """Get detailed explanations and fixes for terminal-specific errors."""
+    from .commands.debug import handle_debug_command
+    handle_debug_command(error_message)
 
 # Defining the version command 
 @cli.command()

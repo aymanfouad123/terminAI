@@ -169,23 +169,12 @@ def get_ai_provider() -> AIProvider:
     
     # Load environment variables from .env file (if it exists)
     if os.path.exists(env_path):
-        print(f"Found .env at {env_path}")
-        with open(env_path, 'r') as f:
-            content = f.read()
-            print(f"Content of .env file:\n{content}")
-    
-        before = os.environ.get("TERMINAI_PROVIDER", "not_set_before")
         dotenv.load_dotenv(env_path, override=True)
-        after = os.environ.get("TERMINAI_PROVIDER", "not_set_after")
-        print(f"TERMINAI_PROVIDER before loading: {before}")
-        print(f"TERMINAI_PROVIDER after loading: {after}")
     else:
         print(f"Warning: .env file not found at {env_path}")
         
     # Get provider type from environment variable
     provider_type = os.environ.get("TERMINAI_PROVIDER", "api")
-    print(f"TERMINAI_PROVIDER: {provider_type}")
-    print(f"TERMINAI_API_URL: {os.environ.get('TERMINAI_API_URL', 'not set')}")
     
     if provider_type.lower() == "ollama":
         base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
