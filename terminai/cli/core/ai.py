@@ -4,6 +4,7 @@ This handles interactions with AI models to generate responses for user queries.
 """
 
 import os 
+import dotenv
 import requests # To enable HTTP requests to APIs
 from typing import Dict, Any, Optional 
 import logging
@@ -158,13 +159,22 @@ class APIProvider(AIProvider):
 # Factory function for AI providers
 def get_ai_provider() -> AIProvider:
     """Factory function to get the configured AI provider"""
-    # This could be extended to support difference providers based on config
-    provider_type = os.environ.get("TERMINAI_PROVIDER", "ollama") # Defaulting Ollama
+    
+    # Load environment variables from .env file (if it exists)
+    if os.path.exists(".env"):
+        dotenv.load_dotenv()
+        
+    # Get provider type from environment variable
+    provider_type = os.environ.get("TERMINAI_PROVIDER", "api")
     
     if provider_type.lower() == "ollama":
         base_url = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")
         model = os.environ.get("OLLAMA_MODEL", "llama3")
         return OllamaProvider(base_url=base_url, model=model)
+    elif provider_type.lower() == "api":
+        api_url = os.environ.get("TERMINAL_API_URL", "http://localhost:8000")
+        api_key = os.environ.get("TERMINAI_API_KEY", "your_custom_api_key_here")
+        return APIProvider(api_url=api_url, api_key=api_key)
     else:
         logger.error(f"Unsupported AI provider: {provider_type}")
         raise ValueError(f"Unsupported AI provider: {provider_type}")
