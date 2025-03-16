@@ -18,13 +18,17 @@ def ask(query):
     from .commands.ask import handle_ask_command        # Lazy importing for faster startup and dependency separation
     handle_ask_command(query)
     
-# Defining debug command 
 @cli.command()
-@click.argument("error_message")
-def debug(error_message):
-    """Get detailed explanations and fixes for terminal-specific errors."""
+@click.argument("error_message", required=True)
+@click.option('--context', '-c', is_flag=True, help="Include your recent commands and outputs as context")
+def debug(error_message, context):
+    """
+    Get detailed explanations and fixes for terminal-specific errors.
+    
+    Add --context to analyze the error in the context of your recent commands and outputs.
+    """
     from .commands.debug import handle_debug_command
-    handle_debug_command(error_message)
+    handle_debug_command(error_message, context)
 
 # Defining the version command 
 @cli.command()
