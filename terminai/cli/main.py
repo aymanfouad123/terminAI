@@ -11,24 +11,32 @@ def cli():
     pass
 
 # Defining the ask command 
-@cli.command()
+@cli.command(name="ask")
 @click.argument("query")
 def ask(query):
     """Ask for a specific terminal command or workflow help."""
     from .commands.ask import handle_ask_command        # Lazy importing for faster startup and dependency separation
     handle_ask_command(query)
-    
-@cli.command()
-@click.argument("error_message", required=True)
+
+'''
+Goals for the debug command -
+terminai debug "error message" - Analyzes a specific error without context
+terminai debug "error message" -c - Analyzes a specific error with context
+terminai debug -a - Automatically analyzes recent terminal activity with context
+'''
+
+@cli.command(name="debug")
+@click.argument("error_message", required=False) # Option argument
 @click.option('--context', '-c', is_flag=True, help="Include your recent commands and outputs as context")
-def debug(error_message, context):
+@click.option('--auto', '-a', is_flag=True,help="Automatically analyze recent terminal activity without specifying an error")
+def debug(error_message, context, auto):
     """
-    Get detailed explanations and fixes for terminal-specific errors.
+    Get detailed explanations and fixes for terminal errors.
     
-    Add --context to analyze the error in the context of your recent commands and outputs.
+    Run without arguments to analyze recent terminal activity automatically.
     """
     from .commands.debug import handle_debug_command
-    handle_debug_command(error_message, context)
+    handle_debug_command(error_message, context or auto)
 
 # Defining the version command 
 @cli.command()
