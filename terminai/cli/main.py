@@ -38,6 +38,13 @@ def debug(error_message, context, auto):
     from .commands.debug import handle_debug_command
     handle_debug_command(error_message, context or auto)
 
+# Shortcut sub-command
+@cli.command(name="-debug")
+def auto_debug():
+    """Automatically analyze recent terminal activity."""
+    from .commands.debug import handle_debug_command
+    handle_debug_command(None, True, auto_analyze=True)     # Calling handler with auto-analysis mode enabled and forced context inclusion.
+
 # Defining the version command 
 @cli.command()
 def version():
